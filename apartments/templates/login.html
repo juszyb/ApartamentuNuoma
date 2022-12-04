@@ -1,0 +1,29 @@
+{% include "header.html" %}
+
+
+<div class="container">
+  <div class="row mb-3">
+    <div class="col-lg-8 col-md-10 mx-auto">
+
+      <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+          {{ form.username.label(class_="form-label mt-4") }}
+          {{ form.username(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.password.label(class_="form-label mt-4") }}
+          {{ form.password(class_="form-control", size=32) }}
+        </div>
+        <div class="d-grid gap-2 d-md-block text-center">
+          {{ form.submit(class_="btn btn-primary form-label mt-4") }}
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% include "footer.html" %}

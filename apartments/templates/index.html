@@ -1,0 +1,52 @@
+{% include "header.html" %}
+
+<!-- Pagrindinio puslapio įžanga -->
+
+<h1 class="visually-hidden">Heroes examples</h1>
+
+<div class="px-4 py-5 my-5 text-center">
+  <i class="fa-solid fa-hotel fa-6x"></i>
+  <h1 class="display-5 fw-bold">Apartamentai</h1>
+  <div class="col-lg-6 mx-auto">
+    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+    </div>
+  </div>
+</div>
+
+<div class="b-example-divider"></div>
+
+
+<!-- Apartamentų skelbimai -->
+
+<div class="album py-5 bg-light">
+  <div class="container">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+    {% for apartment in apartments_list %}
+      <div class="col">
+        <div class="card shadow-sm">
+<!--          <img src="{{ url_for('static', filename='img/hotel.jpg') }}" class="img-thumbnail" alt="">-->
+            <a href="{{ url_for('show_apartment', apartment_id=apartment.id) }}">
+                <img src="{{ apartment.img_url}}" class="img-thumbnail" alt="">
+            </a>
+
+          <div class="card-body">
+            <h3>{{ apartment.apartment_name }}</h3>
+            <p class="card-text">{{ apartment.address }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="btn-group">
+                <a href="{{ url_for('show_apartment', apartment_id=apartment.id) }}" type="button" class="btn btn-sm btn-outline-secondary">Peržiūrėti</a>
+              </div>
+                <small class="text-muted">
+                    {% for star in range(apartment.stars) %}
+                        ⭐
+                    {% endfor %}
+                </small>
+            </div>
+          </div>
+        </div>
+      </div>
+        {% endfor %}
+    </div>
+  </div>
+</div>
+{% include "footer.html" %}

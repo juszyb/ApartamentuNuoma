@@ -1,0 +1,58 @@
+{% include "header.html" %}
+
+<div class="container">
+  <div class="row mb-3">
+    <div class="col-lg-8 col-md-10 mx-auto">
+      <h1>Nuomotojo registracija</h1>
+      <form action="" method="POST" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          {{ form.name.label(class_="form-label mt-4") }}
+          {{ form.name(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.last_name.label(class_="form-label mt-4") }}
+          {{ form.last_name(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.username.label(class_="form-label mt-4") }}
+          {{ form.username(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.email.label(class_="form-label mt-4") }}
+          {{ form.email(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.password.label(class_="form-label mt-4") }}
+          {{ form.password(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.confirm_password.label(class_="form-label mt-4") }}
+          {{ form.confirm_password(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.birth_date.label(class_="form-label mt-4") }}
+          {{ form.birth_date(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.phone_number.label(class_="form-label mt-4") }}
+          {{ form.phone_number(class_="form-control", size=32) }}
+        </div>
+          <div class="form-group">
+          {{ form.company_name.label(class_="form-label mt-4") }}
+          {{ form.company_name(class_="form-control", size=32) }}
+        </div>
+        <div class="d-grid gap-2 d-md-block text-center">
+            {{ form.submit(class_="btn btn-primary form-label mt-4") }}
+        </div>
+      </form>
+      <div class="alert alert-light text-center" role="alert">
+         <a href="{{ url_for('register') }}" class="alert-link alert-primary">Norite prisiregistruoti kaip nuodotojas?</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+{% include "footer.html" %}

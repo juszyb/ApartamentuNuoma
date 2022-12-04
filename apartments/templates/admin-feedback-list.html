@@ -1,0 +1,41 @@
+{% include "header.html" %}
+
+
+<div class="container">
+  <div class="px-4 py-5 my-5 text-center">
+    {% if feedbacks %}
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">Apartamentų pavadinimas</th>
+          <th scope="col">Bendras įvertinimas</th>
+          <th scope="col">Personalo įvertinimas</th>
+          <th scope="col">Komforto įvertinimas</th>
+          <th scope="col">Švaros įvertinimas</th>
+          <th scope="col">Vietos įvertinimas</th>
+          <th scope="col">Komentaras</th>
+          <th scope="col">Panaikinti atsiliepimą</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for feedback, apartment in feedbacks %}
+          <tr>
+            <th scope="row">{{ apartment.apartment_name }}</th>
+            <td>{{ feedback.overall_assessment }}</td>
+            <td>{{ feedback.staff_assessment }}</td>
+            <td>{{ feedback.comfort_assessment }}</td>
+            <td>{{ feedback.cleanliness_assessment }}</td>
+            <td>{{ feedback.place_assessment }}</td>
+            <td>{{ feedback.comment }}</td>
+            <td><a class="btn btn-link" href="#">Panaikinti atsiliepimą</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <h3> Naudotojas neturi atsiliepimų. </h3>
+    {% endif %}
+  </div>
+</div>
+
+{% include "footer.html" %}

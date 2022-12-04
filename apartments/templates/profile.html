@@ -1,0 +1,61 @@
+{% include "header.html" %}
+
+<!--Profilio langas-->
+<!--Kodas-->
+<div class="px-4 py-5 my-5 text-center">
+
+  <div class="media">
+        <i class="fa-solid fa-user fa-8x"></i>
+        <div class="media-body">
+          <h2 class="account-heading">{{ current_user.name }} {{ current_user.last_name }}</h2>
+          <p class="text-secondary">{{ current_user.username }}</p>
+          <p class="text-secondary">{{ current_user.email }}</p>
+          <p class="text-secondary">{{ current_user.phone_number }}</p>
+        </div>
+      </div>
+  <div class="container">
+    <div class="row mb-3">
+      <div class="col-lg-8 col-md-10 mx-auto">
+
+        <form action="" method="POST" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="form-group">
+            {{ form.name.label(class_="form-label mt-4") }}
+            {{ form.name(class_="form-control", size=32) }}
+          </div>
+          <div class="form-group">
+            {{ form.last_name.label(class_="form-label mt-4") }}
+            {{ form.last_name(class_="form-control", size=32) }}
+          </div>
+          <div class="form-group">
+            {{ form.username.label(class_="form-label mt-4") }}
+            {{ form.username(class_="form-control", size=32) }}
+          </div>
+          <div class="form-group">
+            {{ form.email.label(class_="form-label mt-4") }}
+            {{ form.email(class_="form-control", size=32) }}
+          </div>
+          <div class="form-group">
+            {{ form.birth_date.label(class_="form-label mt-4") }}
+            {{ form.birth_date(class_="form-control", size=32) }}
+          </div>
+          <div class="form-group">
+            {{ form.phone_number.label(class_="form-label mt-4") }}
+            {{ form.phone_number(class_="form-control", size=32) }}
+          </div>
+          <div class="d-grid gap-2 d-md-block text-center">
+            {{ form.submit(class_="btn btn-primary form-label mt-4") }}
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+  <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+    <a href="{{ url_for('history_page') }}" type="button" class="btn btn-outline-secondary btn-sm px-4">Peržiūrėti istoriją</a>
+  </div>
+</div>
+</div>
+
+{% include "footer.html" %}
