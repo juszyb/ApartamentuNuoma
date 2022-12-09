@@ -40,7 +40,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     birth_date = db.Column(db.DateTime, nullable=True)
-    phone_number = db.Column(db.Integer, nullable=True)
+    phone_number = db.Column(db.String(100), nullable=True)
     property_owner = relationship("PropertyOwner", back_populates="user")
     tenant = relationship("Tenant", back_populates="user")
 
@@ -60,7 +60,7 @@ class Apartment(db.Model):
     apartment_name = db.Column(db.String(100), nullable=False)
     city = db.Column(db.String(100), nullable=False)
     address = db.Column(db.String(100), nullable=False, unique=True)
-    phone_number = db.Column(db.Integer, nullable=False, unique=True)
+    phone_number = db.Column(db.String(100), nullable=False, unique=True)
     stars = db.Column(db.Integer, nullable=True)
     img_url = db.Column(db.String(250), nullable=False)
     latitude = db.Column(db.Float(20), nullable=False)
@@ -95,6 +95,9 @@ class Room(db.Model):
     free_room = db.Column(db.Boolean, unique=False, default=True)
     text = db.Column(db.Text, nullable=False)
     room_number = db.Column(db.Integer, nullable=False)
+    room_fees = db.Column(db.Float(20), nullable=False)
+    breakfast_fees = db.Column(db.Float(20), nullable=False)
+    other_fees = db.Column(db.Float(20), nullable=False)
     room_type = relationship("RoomType", back_populates="room")
     apartment = relationship("Apartment", back_populates="room")
     booking = relationship("Booking", secondary=room_reservation, back_populates="room")
@@ -105,7 +108,7 @@ class Room(db.Model):
 class RoomType(db.Model):
     __tablename__ = "kambario_tipas"
     id = db.Column(db.Integer, primary_key=True)
-    # TODO: Pridėti kambario tipo pavadinimą
+    type_name = db.Column(db.String(100), nullable=False)
     price_for_night = db.Column(db.Float(20), nullable=False)
     number_of_beds = db.Column(db.Integer)
     room = relationship("Room", back_populates="room_type")
@@ -150,11 +153,8 @@ class Booking(db.Model):
 
 class Bill(db.Model):
     __tablename__ = "saskaita"
-    # TODO: Pridėti visos sumos stulpelį
     id = db.Column(db.Integer, primary_key=True)
-    room_fees = db.Column(db.Float(20), nullable=False)
-    breakfast_fees = db.Column(db.Float(20), nullable=False)
-    other_fees = db.Column(db.Float(20), nullable=False)
+    full_price = db.Column(db.Float(20), nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.strftime(datetime.today(), "%Y-%m-%d"))
     tenant = relationship("Tenant", back_populates="bill")
     booking = relationship("Booking", back_populates="bill")
@@ -164,7 +164,7 @@ class Bill(db.Model):
 class Payment(db.Model):
     __tablename__ = "apmokejimas"
     id = db.Column(db.Integer, primary_key=True)
-    full_price = db.Column(db.Float(20), nullable=False)
+    completed = db.Column(db.Boolean, default=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.strftime(datetime.today(), "%Y-%m-%d"))
     bill = relationship("Bill", back_populates="payment")
     fk_bill_id = db.Column(db.Integer, db.ForeignKey("saskaita.id"))

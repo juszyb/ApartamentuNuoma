@@ -38,9 +38,13 @@
           {{ form.phone_number.label(class_="form-label mt-4") }}
           {{ form.phone_number(class_="form-control", size=32) }}
         </div>
-          <div class="form-group">
+        <div class="form-group">
           {{ form.company_name.label(class_="form-label mt-4") }}
           {{ form.company_name(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.company_code.label(class_="form-label mt-4") }}
+          {{ form.company_code(class_="form-control", size=32) }}
         </div>
         <div class="d-grid gap-2 d-md-block text-center">
             {{ form.submit(class_="btn btn-primary form-label mt-4") }}

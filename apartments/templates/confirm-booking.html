@@ -15,14 +15,15 @@
             <p class="card-text"><a href="{{ url_for('show_apartment', apartment_id=booking.Apartment.id) }}" class="card-link">Nuoroda į skelbimą</a></p>
           </div>
           <ul class="list-group list-group-flush">
-            <li class="list-group-item">Kambarys: {{ booking.Bill.room_fees }}</li>
-            <li class="list-group-item">Pusryčiai: {{ booking.Bill.breakfast_fees }}</li>
-            <li class="list-group-item">Kita: {{ booking.Bill.other_fees }}</li>
-            <li class="list-group-item">Viso suma: </li>
+            <li class="list-group-item">Kambario kaina: {{ booking.RoomType.price_for_night }} €</li>
+            <li class="list-group-item">Kambario mokesčiai: {{ booking.Room.room_fees }} €</li>
+            <li class="list-group-item">Pusryčių mokesčiai: {{ booking.Room.breakfast_fees }} €</li>
+            <li class="list-group-item">Kiti mokesčiai: {{ booking.Room.other_fees }} €</li>
+            <li class="list-group-item">Viso suma: {{ booking.Bill.full_price|round(2) }} €</li>
           </ul>
           <div class="card-body">
             <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-              <a href="#" type="button" class="btn btn-outline-secondary btn-sm px-4">Atlikti užsakymą</a>
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ConfirmPayment{{ booking.Bill.id }}">Patvirtinti užsakymą</button>
             </div>
           </div>
         </div>
@@ -31,4 +32,26 @@
   </div>
 </div>
 
+<!-- Modal -->
+  <div class="modal fade" id="ConfirmPayment{{ booking.Bill.id }}" role="dialog">
+    <div class="modal-dialog modal-lg">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+<!--          <button type="button" class="close" data-dismiss="modal">&times;</button>-->
+          <h4 class="modal-title">Pranešimas</h4>
+        </div>
+        <div class="modal-body">
+          <p> Ar tikrai norite patvirtinti užsakymą ir pereiti prie apmokėjimo? </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Uždaryti</button>
+          <a href="{{ url_for('create_checkout_session', bill_id=booking.Bill.id) }}" type="button" class="btn btn-primary">Apmokėti</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
 {% include "footer.html" %}
+

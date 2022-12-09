@@ -23,7 +23,7 @@
             <td>{{ apartment.apartment_name }}</td>
             <td>{{ booking.arrival_date }}</td>
             <td>{{ booking.departure_date }}</td>
-            <td>{{ payment.full_price }}</td>
+            <td>{{ bill.full_price|round(2) }} €</td>
             <td>{{ booking.num_of_persons }}</td>
             <td><a class="btn btn-link" href="{{ url_for('create_feedback', booking_id=booking.id) }}">Rašyti atsiliepimą</a></td>
             <td><a class="btn btn-link" href="{{ url_for('edit_feedback', booking_id=booking.id) }}">Redaguoti atsiliepimą</a></td>

@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['GOOGLEMAPS_KEY'] = ""
+app.config['GOOGLEMAPS_KEY'] = os.environ.get("GOOGLEMAPS_API_KEY")
 db = SQLAlchemy(app)
 ckeditor = CKEditor(app)
 Bootstrap(app)

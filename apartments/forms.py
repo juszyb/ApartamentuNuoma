@@ -13,8 +13,8 @@ class UserRegistrationForm(FlaskForm):
     email = StringField("El. paštas", validators=[DataRequired(), Email()])
     password = PasswordField("Slaptažodis", validators=[DataRequired()])
     confirm_password = PasswordField("Pakartoti slaptažodį", validators=[DataRequired(), EqualTo('password')])
-    birth_date = DateField("Gimimo data", validators=[DataRequired()])
-    phone_number = IntegerField("Telefono numeris", validators=[DataRequired()])
+    birth_date = DateField("Gimimo data", validators=[])
+    phone_number = IntegerField("Telefono numeris", validators=[])
     submit = SubmitField("Registruotis")
 
     def validate_username(self, username):
@@ -40,7 +40,7 @@ class UpdateProfileForm(FlaskForm):
     username = StringField("Prisijungimo vardas", validators=[DataRequired()])
     email = StringField("El. paštas", validators=[DataRequired(), Email()])
     birth_date = DateField("Gimimo data", validators=[])
-    phone_number = IntegerField("Telefono numeris", validators=[])
+    phone_number = StringField("Telefono numeris", validators=[])
     submit = SubmitField("Išsaugoti")
 
     def validate_username(self, username):
@@ -63,9 +63,10 @@ class VendorRegistrationForm(FlaskForm):
     email = StringField("El. paštas", validators=[DataRequired()])
     password = PasswordField("Slaptažodis", validators=[DataRequired()])
     confirm_password = PasswordField("Pakartoti slaptažodį", validators=[DataRequired(), EqualTo('password')])
-    birth_date = DateField("Gimimo data", validators=[DataRequired()])
-    phone_number = IntegerField("Telefono numeris", validators=[DataRequired()])
+    phone_number = StringField("Telefono numeris", validators=[])
+    birth_date = DateField("Gimimo data", validators=[])
     company_name = StringField("Įmonės pavadinimas", validators=[DataRequired()])
+    company_code = StringField("Įmonės kodas", validators=[DataRequired()])
     submit = SubmitField("Registruotis")
 
 # Užsakymo forma
@@ -84,3 +85,11 @@ class FeedbackForm(FlaskForm):
     place_assessment = IntegerField("Vietos vertinimas (1-10)", validators=[DataRequired(), NumberRange(min=0, max=10)])
     comment = StringField("Komentaras", validators=[DataRequired()])
     submit = SubmitField("Įrašyti")
+
+class SearchApartments(FlaskForm):
+    apartment_name = StringField("Apartamentų pavadinimas", render_kw={"placeholder": "Apartamentų pavadinimas"})
+    submit = SubmitField("Ieškoti")
+
+class SearchForUser(FlaskForm):
+    user_name = StringField("Naudotojo pavardė", render_kw={"placeholder": "Naudotojo pavardė"})
+    submit = SubmitField("Ieškoti")

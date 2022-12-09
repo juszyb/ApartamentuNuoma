@@ -40,31 +40,27 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarColor01">
         <ul class="navbar-nav me-auto">
+          {% if current_user.is_authenticated %}
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('profile_page') }}">Profilis</a>
           </li>
+          {% endif %}
           {% if current_user.id == 1%}
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('admin_page') }}">Administratoriaus valdymas</a>
           </li>
           {% endif %}
+          {% if current_user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link" href="#">Nuomotojo valdymas</a>
           </li>
+          {% endif %}
+          {% if current_user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('view_bookings_list') }}">Užsakymai</a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
-            <div class="dropdown-menu">
-              <a class="dropdown-item" href="#">Action</a>
-              <a class="dropdown-item" href="#">Another action</a>
-              <a class="dropdown-item" href="#">Something else here</a>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="#">Separated link</a>
-            </div>
-          </li>
+          {% endif %}
         </ul>
         <div class="col-md-3 text-end">
           {% if current_user.is_authenticated %}

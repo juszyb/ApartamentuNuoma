@@ -1,22 +1,28 @@
 from flask import render_template, url_for, redirect, flash, request, abort
 from apartments import app, db
 from apartments.forms import UserRegistrationForm, BookingForm, UpdateProfileForm, UserLoginForm, \
-    VendorRegistrationForm, FeedbackForm
+    VendorRegistrationForm, FeedbackForm, SearchApartments, SearchForUser
 from apartments.models import User, PropertyOwner, Apartment, Tenant, Room, RoomType, Feedback, room_reservation, \
     BookingStatus, Booking, Bill, Payment, admin_only, owner_only
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_googlemaps import Map, get_coordinates
 import folium
-import datetime
+from datetime import datetime
 from werkzeug.exceptions import NotFound
 import stripe
 import requests
+import os
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def main_page():
+    form = SearchApartments()
     apartments_list = Apartment.query.all()
-    return render_template('index.html', apartments_list=apartments_list)
+    if form.validate_on_submit():
+        aps = form.apartment_name.data
+        search = "%{}%".format(aps)
+        apartments_list = Apartment.query.filter(Apartment.apartment_name.like(search)).all()
+    return render_template('index.html', form=form, apartments_list=apartments_list)
 
 
 @app.route("/apartment/<int:apartment_id>", methods=["GET", "POST"])
@@ -60,7 +66,6 @@ def show_apartment(apartment_id):
         weather[i].append(t)
         weather[i].append(w)
 
-    print(weather)
     # result = Room.query.filter(Room.fk_apartment_id == requested_apartment.id).filter(Room.free_room == 1).all()
     return render_template('apartment.html', apartment=requested_apartment, rooms=room_list, feedbacks_list=feedbacks, weather=weather)
 
@@ -107,11 +112,17 @@ def book_room(room_id):
             db.session.add(tenant)
             db.session.flush()
 
+        # convert string to date object
+        d1 = datetime.strptime(str(form.departure_date.data), "%Y-%m-%d")
+        d2 = datetime.strptime(str(form.arrival_date.data), "%Y-%m-%d")
+
+        # difference between dates in timedelta
+        delta = d1 - d2
+        number_of_nights = int(delta.days)
+
         new_bill = Bill(
-            room_fees=room_type.price_for_night,
-            breakfast_fees=0,
-            other_fees=0,
-            date=datetime.datetime.now(),
+            full_price=number_of_nights*(float(room_type.price_for_night) + float(room.room_fees) + float(room.breakfast_fees) + float(room.other_fees)),
+            date=datetime.now(),
             fk_tenant_id=tenant.id
         )
         db.session.add(new_bill)
@@ -125,11 +136,17 @@ def book_room(room_id):
             fk_tenant_id=tenant.id,
             fk_bill_id=new_bill.id
         )
+        new_payment = Payment(
+            completed=False,
+            date=datetime.now(),
+            fk_bill_id=new_bill.id
+        )
 
         #Kadangi po užsakymo kambarys tampa nebelaisvas, tai pasikeičia kambario būsena
-        # room.free_room = False
+        room.free_room = False
 
         db.session.add(new_booking)
+        db.session.add(new_payment)
         db.session.flush()
         # Užpildoma kambario rezervacijos lentelė
         new_room_reservation = room_reservation.insert().values(room_id=room_id, booking_id=new_booking.id)
@@ -162,15 +179,24 @@ def view_bookings_list():
         Bill.fk_tenant_id == tenant.id
     ).all()
 
-
     return render_template("bookings.html", bookings=ongoing_bookings)
+
+@app.route('/booking-list/<int:booking_id>/delete', methods=["GET", "POST"])
+def cancel_booking(booking_id):
+    booking = Booking.query.get(booking_id)
+    booking.status = BookingStatus.cancelled
+    db.session.commit()
+    flash("Jūsų užsakymas sėkmingai atšauktas", "success")
+    return redirect(url_for('main_page'))
+
 
 @app.route("/booking-list/booking/<int:booking_id>", methods=["GET", "POST"])
 @login_required
 def confirm_payment(booking_id):
+
     tenant = Tenant.query.filter(Tenant.fk_user_id == current_user.id).first_or_404()
 
-    booking = db.session.query(Booking, room_reservation, Room, Apartment, Bill).filter(
+    booking = db.session.query(Booking, room_reservation, Room, Apartment, Bill, RoomType, Payment).filter(
         Booking.fk_tenant_id == tenant.id
     ).filter(
         Booking.id == booking_id
@@ -184,30 +210,68 @@ def confirm_payment(booking_id):
         Apartment.id == Room.fk_apartment_id
     ).filter(
         Bill.fk_tenant_id == tenant.id
+    ).filter(
+        RoomType.id == Room.fk_room_type_id
+    ).filter(
+        Payment.fk_bill_id == Bill.id
     ).all()[0]
 
-    print(booking.Booking.id)
+    if booking.Payment.completed:
+        flash("Jūs jau apmokėjote šį užsakymą", "danger")
+        return redirect(url_for('view_bookings_list'))
+
+    # Sukuriamas apmokėjimas stripe platformoje
+    if not stripe.Product.retrieve(f"{booking.Bill.id}"):
+        bill = stripe.Product.create(
+            id=booking.Bill.id,
+            name=booking.RoomType.type_name,
+            default_price_data={
+                "unit_amount_decimal": round(booking.Bill.full_price * 100, 2),
+                "currency": 'EUR'
+            }
+        )
 
     return render_template("confirm-booking.html", booking=booking)
 
-@app.route('/create-checkout-session', methods=['POST'])
-def create_checkout_session():
+@app.route('/create-checkout-session/<int:bill_id>', methods=["GET", "POST"])
+def create_checkout_session(bill_id):
+    # Sąskaita yra kaip produktas,
+    bill = stripe.Product.retrieve(f"{bill_id}")
     try:
-        checkout_session = stripe.checkout.Session.create(
-            line_items =[
+        session = stripe.checkout.Session.create(
+            line_items=[
                 {
-                    'price': 'price_1M0pCvJV9kbyv4JRE12aXCTN',
+                    'price': bill['default_price'],
                     'quantity': 1
                 }
             ],
             mode='payment',
-            success_url="http://127.0.0.1:5000",
+            success_url="http://127.0.0.1:5000" + "/success?session_id={CHECKOUT_SESSION_ID}" + f"&product_id={bill_id}",
             cancel_url="http://127.0.0.1:5000" + "/cancel"
         )
-
     except Exception as e:
         return str(e)
-    return redirect(checkout_session.url, code=303)
+
+    return redirect(session.url, code=303)
+
+@app.route('/success')
+def success_message():
+    #Grąžina apmokėjimo informaciją, jame galima rast payment status, kuris parodo, ar jau įvykdytas apmokėjimas
+    session = stripe.checkout.Session.retrieve(request.args.get('session_id'))
+    #Grąžina sąskaitą su jos nr, pagal ką galiu patvirtinti, kuri sąskaita priklauso kuriam apmokėjimui
+    product = stripe.Product.retrieve(request.args.get('product_id'))
+
+    #Pakeičiama apmokėjimo busena į užbaigtą
+    payment = Payment.query.filter(Payment.fk_bill_id == product['id']).first()
+    payment.completed = True
+
+    #Pakeičiama užsakymo būsena į užbaigtą
+    booking = Booking.query.filter(Booking.fk_bill_id == product['id']).first()
+    booking.status = BookingStatus.finished
+
+    db.session.commit()
+
+    return render_template('success.html')
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -246,7 +310,8 @@ def register_for_owner():
             phone_number=form.phone_number.data
         )
         new_company = PropertyOwner(
-            company_name=form.company_name.data
+            company_name=form.company_name.data,
+            company_code=form.company_name.data
         )
         new_user.property_owner.append(new_company)
         db.session.add(new_user)
@@ -372,7 +437,7 @@ def create_feedback(booking_id):
             cleanliness_assessment=form.cleanliness_assessment.data,
             place_assessment=form.place_assessment.data,
             comment=form.comment.data,
-            date=datetime.datetime.now(),
+            date=datetime.now(),
             fk_booking_id=requested_booking.id,
             fk_tenant_id=user.id,
             fk_apartment_id=apartment.id
@@ -414,7 +479,7 @@ def edit_feedback(booking_id):
         requested_feedback.cleanliness_assessment = edit_form.cleanliness_assessment.data
         requested_feedback.place_assessment = edit_form.place_assessment.data
         requested_feedback.comment = edit_form.comment.data
-        requested_feedback.date = datetime.datetime.now()
+        requested_feedback.date = datetime.now()
         db.session.commit()
 
         flash("Atsiliepimas sėkmingai paredaguotas", "success")
@@ -422,12 +487,17 @@ def edit_feedback(booking_id):
     return render_template("feedback-form.html", booking=requested_booking, form=edit_form, is_edit=True)
 
 
-@app.route("/admin-list")
+@app.route("/admin-list", methods=["GET", "POST"])
 @login_required
 @admin_only
 def admin_page():
     user_list = User.query.all()
-    return render_template("admin-list.html", user_list=user_list)
+    form = SearchForUser()
+    if form.validate_on_submit():
+        user = form.user_name.data
+        search = "%{}%".format(user)
+        user_list = User.query.filter(User.last_name.like(search)).all()
+    return render_template("admin-list.html", form=form, user_list=user_list)
 
 @app.route("/admin-list/<int:user_id>/delete", methods=["GET", "POST"])
 @login_required
@@ -475,3 +545,15 @@ def show_feedback_list(user_id):
         return redirect(url_for('admin_page'))
 
     return render_template("admin-feedback-list.html", feedbacks=results)
+
+@app.route("/property-owner-list", methods=["GET", "POST"])
+@login_required
+@owner_only
+def property_owner_apartments():
+    #Suranda nuomotoją pagal current userį
+    property_owner = PropertyOwner.query.filter(PropertyOwner.fk_user_id == current_user.id).first_or_404()
+    #Suranda apartamentus pagal nuomotojo id
+    result = Apartment.query.filter(Apartment.fk_property_owner_id == property_owner.id)
+
+
+    return render_template("property-owner-list.html", apartments_list=result)

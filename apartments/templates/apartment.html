@@ -11,51 +11,53 @@
     </div>
     <div class="col-lg-6">
       <h1 class="display-5 fw-bold lh-1 mb-3">{{ apartment.apartment_name}}</h1>
-      <p class="lead">Quickly design and customize responsive mobile-first sites with Bootstrap, the world’s most popular front-end open source toolkit, featuring Sass variables and mixins, responsive grid system, extensive prebuilt components, and
-        powerful JavaScript plugins.</p>
+      <p class="lead">{{ apartment.text}}</p>
     </div>
     <div class="row g-5">
       <div class="col-md-8">
 
-        <article class="blog-post">
-          <h3 class="blog-post-title mb-1">Sample blog post</h3>
+        {% if rooms %}
+          <div class="card">
+            {% for room, type in rooms %}
+              <div class="card-body">
+                <h4 class="card-title">{{ type.type_name }}</h4>
+                <p class="card-text">{{ room.text }}</p>
+                <p class="card-text">Lovų skaičius: {{ type.number_of_beds }}</p>
+                <h6 class="card-subtitle mb-2 text-muted"> Kambario kaina už parą: {{ type.price_for_night }} €</h6>
+                <h6 class="card-subtitle mb-2 text-muted"> Mokesčiai už kambarį: {{ room.room_fees }} €</h6>
+                <h6 class="card-subtitle mb-2 text-muted"> Mokesčiai už pusryčius: {{ room.breakfast_fees }} €</h6>
+                <h6 class="card-subtitle mb-2 text-muted"> Kiti mokesčiai: {{ room.other_fees }} €</h6>
+                <!-- Button trigger modal -->
+                <a href="{{ url_for('book_room', room_id=room.id) }}" type="button" class="btn btn-primary">
+                  Pasirinkti kambarį
+                </a>
+              </div>
+              <hr>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-center">Laisvų kambarių šiuo metu nėra</p>
+        {% endif %}
 
-          <p>This blog post shows a few different types of content that’s supported and styled with Bootstrap. Basic typography, lists, tables, images, code, and more are all supported as expected.</p>
-          <hr>
-
-        </article>
-
-
-        <div class="card">
-          {% for room, type in rooms %}
-            <div class="card-body">
-              <h4 class="card-title">Pavadinimas</h4>
-              <h6 class="card-subtitle mb-2 text-muted"> Kaina už parą: {{ type.price_for_night }}</h6>
-              <p class="card-text">{{ room.text }}</p>
-              <p class="card-text">Lovų skaičius: {{ type.number_of_beds }}</p>
-              <!-- Button trigger modal -->
-              <a href="{{ url_for('book_room', room_id=room.id) }}" type="button" class="btn btn-primary">
-                Pasirinkti kambarį
-              </a>
-            </div>
-            <hr>
-          {% endfor %}
-        </div>
         <div class="my-3 p-3 bg-body rounded shadow-sm">
           <h6 class="border-bottom pb-2 mb-0">Atsiliepimai</h6>
-          {% for feedback, tenant, user in feedbacks_list %}
-          <div class="d-flex text-muted pt-3">
-            <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false">
-              <title>Placeholder</title>
-              <rect width="100%" height="100%" fill="#007bff" /><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text>
-            </svg>
+          {% if feedbacks_list %}
+            {% for feedback, tenant, user in feedbacks_list %}
+            <div class="d-flex text-muted pt-3">
+              <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false">
+                <title>Placeholder</title>
+                <rect width="100%" height="100%" fill="#007bff" /><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text>
+              </svg>
 
-            <p class="pb-3 mb-0 small lh-sm border-bottom">
-              <strong class="d-block text-gray-dark">{{ user.name }} {{ user.last_name }}</strong>
-              {{ feedback.comment }}
-            </p>
-          </div>
-          {% endfor %}
+              <p class="pb-3 mb-0 small lh-sm border-bottom">
+                <strong class="d-block text-gray-dark">{{ user.name }} {{ user.last_name }}</strong>
+                {{ feedback.comment }}
+              </p>
+            </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-center">Atsiliepimų nėra</p>
+          {% endif %}
         </div>
       </div>
 

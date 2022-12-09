@@ -13,7 +13,8 @@
           <th scope="col">Išvykimo data</th>
           <th scope="col">Kaina</th>
           <th scope="col">Žmonių kiekis</th>
-          <th scope="col">Peržiūrėti</th>
+          <th scope="col">Patvirtinti užsakymą</th>
+          <th scope="col">Atšaukti</th>
         </tr>
       </thead>
       <tbody>
@@ -23,13 +24,14 @@
             <td>{{ apartment.apartment_name }}</td>
             <td>{{ booking.arrival_date }}</td>
             <td>{{ booking.departure_date }}</td>
-            <td></td>
+            <td>{{ bill.full_price|round(2) }} €</td>
             <td>{{ booking.num_of_persons }}</td>
-            <td><a class="btn btn-link" href="{{ url_for('confirm_payment', booking_id=booking.id) }}">Apmokėti</a></td>
+            <td><a class="btn btn-link" href="{{ url_for('confirm_payment', booking_id=booking.id) }}">Patvirtinti</a></td>
+           <td><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#DeleteBooking{{ booking.id }}">Ištrinti</button></td>
           </tr>
         {% endfor %}
     {% else %}
-      <h3>Jūsų neturi užsakymų istorijos</h3>
+      <h3>Šiuo metu neturite vykdomų užsakymų</h3>
     {% endif %}
 
       </tbody>
@@ -37,4 +39,27 @@
   </div>
 </div>
 
+{% for booking, r1, r2, room, apartment, bill in bookings %}
+ <!-- Modal -->
+  <div class="modal fade" id="DeleteBooking{{ booking.id }}" role="dialog">
+    <div class="modal-dialog modal-lg">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+<!--          <button type="button" class="close" data-dismiss="modal">&times;</button>-->
+          <h4 class="modal-title">Pranešimas</h4>
+        </div>
+        <div class="modal-body">
+          <p> Ar tikrai norite atšaukti užsakymą naudotoją?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Uždaryti</button>
+          <a href="{{ url_for('cancel_booking', booking_id=booking.id) }}" type="button" class="btn btn-primary">Atšaukti</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endfor %}
 {% include "footer.html" %}
