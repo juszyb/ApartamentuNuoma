@@ -141,6 +141,7 @@ class Booking(db.Model):
     num_of_persons = db.Column(db.Integer, nullable=False)
     status = db.Column(db.Enum(BookingStatus), nullable=False)
     tenant = relationship("Tenant", back_populates="booking")
+    send_mail = db.Column(db.Boolean, default=False)
     bill = relationship("Bill", back_populates="booking")
     room = relationship("Room", secondary=room_reservation, back_populates="booking")
     feedback = relationship("Feedback", back_populates="booking")
