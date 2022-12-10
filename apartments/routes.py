@@ -176,7 +176,7 @@ def view_bookings_list():
     ).filter(
         Apartment.id == Room.fk_apartment_id
     ).filter(
-        Bill.fk_tenant_id == tenant.id
+        Bill.id == Booking.fk_bill_id
     ).all()
 
     return render_template("bookings.html", bookings=ongoing_bookings)
