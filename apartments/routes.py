@@ -209,7 +209,7 @@ def confirm_payment(booking_id):
     ).filter(
         Apartment.id == Room.fk_apartment_id
     ).filter(
-        Bill.fk_tenant_id == tenant.id
+        Bill.id == Booking.fk_bill_id
     ).filter(
         RoomType.id == Room.fk_room_type_id
     ).filter(
@@ -396,7 +396,7 @@ def history_page():
     ).filter(
         Apartment.id == Room.fk_apartment_id
     ).filter(
-        Bill.fk_tenant_id == user.id
+        Bill.id == Booking.fk_bill_id
     ).filter(
         Bill.id == Payment.fk_bill_id
     ).all()
