@@ -374,7 +374,6 @@ def profile_page():
 
 @app.route("/booking-history")
 @login_required
-# @owner_only
 def history_page():
     print(current_user.id)
     try:
@@ -548,8 +547,13 @@ def show_feedback_list(user_id):
 
 @app.route("/property-owner-list", methods=["GET", "POST"])
 @login_required
-@owner_only
 def property_owner_apartments():
+    try:
+        PropertyOwner.query.filter(PropertyOwner.fk_user_id == current_user.id).first_or_404()
+    except NotFound:
+        flash("Jūs nesate nuomotojos, todėl peržiūrėti negalite", "danger")
+        return redirect(url_for('main_page'))
+
     #Suranda nuomotoją pagal current userį
     property_owner = PropertyOwner.query.filter(PropertyOwner.fk_user_id == current_user.id).first_or_404()
     #Suranda apartamentus pagal nuomotojo id

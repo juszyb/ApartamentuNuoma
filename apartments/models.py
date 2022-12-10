@@ -5,7 +5,7 @@ from flask_login import UserMixin, current_user
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from functools import wraps
-from flask import abort
+from flask import abort, redirect, url_for
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -23,12 +23,9 @@ def admin_only(f):
 def owner_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        result = PropertyOwner.query.with_entities(PropertyOwner.fk_user_id)
-        for r in result:
-            if current_user.id == r.fk_user_id:
-                return f(*args, **kwargs)
-            else:
-                return abort(403)
+        if not PropertyOwner.query.filter(PropertyOwner.fk_user_id == current_user.id):
+            return abort(403)
+        return f(*args, **kwargs)
     return decorated_function
 
 class User(UserMixin, db.Model):

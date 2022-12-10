@@ -53,7 +53,7 @@
           {% endif %}
           {% if current_user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="#">Nuomotojo valdymas</a>
+            <a class="nav-link" href="{{ url_for('property_owner_apartments') }}">Nuomotojo valdymas</a>
           </li>
           {% endif %}
           {% if current_user.is_authenticated %}
