@@ -1,6 +1,70 @@
 {% include "header.html" %}
 
-<!--Nuomotojo išnuomotų apartamentų sąrašas-->
-<!--Kodas-->
+<div class="container">
+  <div class="px-4 py-5 my-5 text-center">
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <a href="{{ url_for('create_apartment') }}" type="button" class="btn btn-outline-secondary btn-sm px-4">Sukurti apartamentų skelbimą</a>
+    </div>
+      <br>
+  {% if apartments_list %}
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">Nr.</th>
+          <th scope="col">Apartamentų pavadinimas</th>
+          <th scope="col">Miestas</th>
+          <th scope="col">Adresas</th>
+          <th scope="col">Telefono numeris</th>
+          <th scope="col">Žvaigždučių kiekis</th>
+          <th scope="col">Redaguoti skelbimą</th>
+          <th scope="col">Pridėti kambarį</th>
+          <th scope="col">Panaikinti skelbimą</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for apartment in apartments_list %}
+          <tr>
+            <th scope="row">{{ apartment.id }}</th>
+            <td>{{ apartment.apartment_name }}</td>
+            <td>{{ apartment.city }}</td>
+            <td>{{ apartment.address }}</td>
+            <td>{{ apartment.phone_number }}</td>
+            <td>{{ apartment.stars }}</td>
+            <td><a class="btn btn-link" href="#">Peržiūrėti skelbimą</a></td>
+            <td><a class="btn btn-link" href="#">Pridėti naują kambarį</a></td>
+            <td><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#DeleteApartments{{ apartment.id }}">Panaikinti skelbimą</button></td>
+          </tr>
+        {% endfor %}
+    {% else %}
+      <h3>Jūs neturite savo sukurtų skelbimų</h3>
+    {% endif %}
 
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% for apartment in apartments_list %}
+ <!-- Modal -->
+  <div class="modal fade" id="DeleteApartments{{ apartment.id }}" role="dialog">
+    <div class="modal-dialog modal-lg">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+<!--          <button type="button" class="close" data-dismiss="modal">&times;</button>-->
+          <h4 class="modal-title">Pranešimas</h4>
+        </div>
+        <div class="modal-body">
+          <p> Ar tikrai norite pašalinti apartamentų skelbimą?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Uždaryti</button>
+          <a href="#" type="button" class="btn btn-primary">Pašalinti</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endfor %}
 {% include "footer.html" %}

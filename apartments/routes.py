@@ -1,7 +1,7 @@
 from flask import render_template, url_for, redirect, flash, request, abort
 from apartments import app, db
 from apartments.forms import UserRegistrationForm, BookingForm, UpdateProfileForm, UserLoginForm, \
-    VendorRegistrationForm, FeedbackForm, SearchApartments, SearchForUser
+    VendorRegistrationForm, FeedbackForm, SearchApartments, SearchForUser, CreateApartment
 from apartments.models import User, PropertyOwner, Apartment, Tenant, Room, RoomType, Feedback, room_reservation, \
     BookingStatus, Booking, Bill, Payment, admin_only, owner_only
 from flask_login import login_user, current_user, logout_user, login_required
@@ -10,6 +10,7 @@ import folium
 from datetime import datetime
 from werkzeug.exceptions import NotFound
 import stripe
+import stripe.error
 import requests
 import os
 
@@ -47,7 +48,7 @@ def show_apartment(apartment_id):
         "lon": requested_apartment.longitude,
         "cnt": "5",
         "units": "metric",
-        "appid": ""
+        "appid": "69f04e4613056b159c2761a9d9e664d2"
     }
 
     response = requests.get(OWM_ENDPOINT, params=weather_parameters)
@@ -165,8 +166,12 @@ def view_bookings_list():
         flash("Jūsų užsakymų nėra", "danger")
         return redirect(url_for('main_page'))
 
-    ongoing_bookings = db.session.query(Booking, room_reservation, Room, Apartment, Bill).filter(
+    ongoing_bookings = db.session.query(Bill, Booking, room_reservation, Room, Apartment).filter(
         Booking.fk_tenant_id == tenant.id
+    ).filter(
+        Bill.fk_tenant_id == tenant.id
+    ).filter(
+        Booking.fk_bill_id == Bill.id
     ).filter(
         Booking.status == BookingStatus.ongoing
     ).filter(
@@ -175,8 +180,6 @@ def view_bookings_list():
         Room.id == room_reservation.c.room_id
     ).filter(
         Apartment.id == Room.fk_apartment_id
-    ).filter(
-        Bill.id == Booking.fk_bill_id
     ).all()
 
     return render_template("bookings.html", bookings=ongoing_bookings)
@@ -221,7 +224,9 @@ def confirm_payment(booking_id):
         return redirect(url_for('view_bookings_list'))
 
     # Sukuriamas apmokėjimas stripe platformoje
-    if not stripe.Product.retrieve(f"{booking.Bill.id}"):
+    try:
+        stripe.Product.retrieve(f"{booking.Bill.id}")
+    except stripe.error.InvalidRequestError:
         bill = stripe.Product.create(
             id=booking.Bill.id,
             name=booking.RoomType.type_name,
@@ -559,5 +564,9 @@ def property_owner_apartments():
     #Suranda apartamentus pagal nuomotojo id
     result = Apartment.query.filter(Apartment.fk_property_owner_id == property_owner.id)
 
-
     return render_template("property-owner-list.html", apartments_list=result)
+
+@app.route('/property-owner-list/create', methods=["GET", "POST"])
+def create_apartment():
+    form = CreateApartment()
+    return render_template("add-apartment.html", form=form)

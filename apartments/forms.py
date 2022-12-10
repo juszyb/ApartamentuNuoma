@@ -93,3 +93,13 @@ class SearchApartments(FlaskForm):
 class SearchForUser(FlaskForm):
     user_name = StringField("Naudotojo pavardė", render_kw={"placeholder": "Naudotojo pavardė"})
     submit = SubmitField("Ieškoti")
+
+class CreateApartment(FlaskForm):
+    apartment_name = StringField("Apartamentų pavadinimas", validators=[DataRequired()])
+    city = StringField("Miestas", validators=[DataRequired()])
+    address = StringField("Adresas", validators=[DataRequired()])
+    phone_number = StringField("Telefono numeris", validators=[DataRequired()])
+    stars = IntegerField("Apartamentų žvaiždučių skaičius", validators=[DataRequired()])
+    img_url = StringField("Nuotraukos nuoroda", validators=[DataRequired()])
+    text = CKEditorField("Apartamentų aprašymas", validators=[DataRequired()])
+    submit = SubmitField("Sukurti")
