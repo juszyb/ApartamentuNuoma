@@ -1,5 +1,5 @@
 from flask import render_template, url_for, redirect, flash, request, abort
-from apartments import app, db
+from apartments import app, db, mail
 from apartments.forms import UserRegistrationForm, BookingForm, UpdateProfileForm, UserLoginForm, \
     VendorRegistrationForm, FeedbackForm, SearchApartments, SearchForUser, CreateApartment
 from apartments.models import User, PropertyOwner, Apartment, Tenant, Room, RoomType, Feedback, room_reservation, \
@@ -13,7 +13,7 @@ import stripe
 import stripe.error
 import requests
 import os
-
+from flask_mail import Message
 
 @app.route("/", methods=["GET", "POST"])
 def main_page():
@@ -357,6 +357,8 @@ def logout():
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile_page():
+
+
     form = UpdateProfileForm(
         name=current_user.name,
         last_name=current_user.last_name,
@@ -633,7 +635,6 @@ def delete_apartment(apartment_id):
         flash("Apartamento pašalinti negalima, nes jis yra/buvo rezervuotas", "danger")
         return redirect(url_for("property_owner_apartments"))
     else:
-        print('NU')
         if Room.query.filter(Room.fk_apartment_id == apartment.id).all():
             room = Room.query.filter(Room.fk_apartment_id == apartment.id).all()
             db.session.delete(room)
