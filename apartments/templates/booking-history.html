@@ -17,7 +17,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for booking, r1, r2, room, apartment, bill, payment in history %}
+        {% for bill, booking, r1, r2, room, apartment in history %}
           <tr>
             <th scope="row">{{ booking.id }}</th>
             <td>{{ apartment.apartment_name }}</td>

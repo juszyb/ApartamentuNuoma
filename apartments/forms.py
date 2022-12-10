@@ -102,4 +102,4 @@ class CreateApartment(FlaskForm):
     stars = IntegerField("Apartamentų žvaiždučių skaičius", validators=[DataRequired()])
     img_url = StringField("Nuotraukos nuoroda", validators=[DataRequired()])
     text = CKEditorField("Apartamentų aprašymas", validators=[DataRequired()])
-    submit = SubmitField("Sukurti")
+    submit = SubmitField("Išsaugoti")

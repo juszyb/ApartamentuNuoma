@@ -380,18 +380,21 @@ def profile_page():
 @app.route("/booking-history")
 @login_required
 def history_page():
-    print(current_user.id)
     try:
         user = Tenant.query.filter(Tenant.fk_user_id == current_user.id).first_or_404()
     except NotFound:
         flash("Jūs neturite užsakymų istorijos", "danger")
         return redirect(url_for('profile_page'))
 
-    # result = Booking.query.filter(Booking.fk_tenant_id == user.id).filter(
-    #     Booking.status == BookingStatus.finished).all()
 
-    results = db.session.query(Booking, room_reservation, Room, Apartment, Bill, Payment).filter(
+    finished_bookings = db.session.query(Bill, Booking, room_reservation, Room, Apartment).filter(
         Booking.fk_tenant_id == user.id
+    ).filter(
+        Booking.fk_tenant_id == user.id
+    ).filter(
+        Bill.fk_tenant_id == user.id
+    ).filter(
+        Booking.fk_bill_id == Bill.id
     ).filter(
         Booking.status == BookingStatus.finished
     ).filter(
@@ -400,19 +403,9 @@ def history_page():
         Room.id == room_reservation.c.room_id
     ).filter(
         Apartment.id == Room.fk_apartment_id
-    ).filter(
-        Bill.fk_tenant_id == user.id
-    ).filter(
-        Bill.id == Payment.fk_bill_id
     ).all()
 
-    # print(result[0].id)
-    # test = db.session.query(room_reservation, Booking, Room).join(Booking).join(Room).all()
-    # print(test)
-    # for room_res, booking_res, booking, room in test:
-    #     print(room_res, booking_res, booking.id, room.id)
-
-    return render_template("booking-history.html", history=results)
+    return render_template("booking-history.html", history=finished_bookings)
 
 
 @app.route("/feedback-create/<int:booking_id>", methods=["GET", "POST"])
@@ -567,6 +560,85 @@ def property_owner_apartments():
     return render_template("property-owner-list.html", apartments_list=result)
 
 @app.route('/property-owner-list/create', methods=["GET", "POST"])
+@login_required
+@owner_only
 def create_apartment():
     form = CreateApartment()
+
+    if form.validate_on_submit():
+        city = form.city.data
+        address = form.address.data
+        full_address = f"{address}, {city}"
+        API = os.environ.get("GOOGLEMAPS_API_KEY")
+        cord = get_coordinates(API_KEY=API, address_text=full_address)
+        new_apartment = Apartment(
+            apartment_name=form.apartment_name.data,
+            city=form.city.data,
+            address=form.address.data,
+            phone_number=form.phone_number.data,
+            stars=form.stars.data,
+            img_url=form.img_url.data,
+            latitude=cord['lat'],
+            longitude=cord['lng'],
+            text=form.text.data,
+            fk_property_owner_id=current_user.id
+        )
+        db.session.add(new_apartment)
+        db.session.commit()
+        flash("Apartamentų skelbimas sėkmingai sukurtas", "success")
+        return redirect(url_for("property_owner_apartments"))
     return render_template("add-apartment.html", form=form)
+
+@app.route('/property-owner-list/edit/<int:apartment_id>', methods=["GET", "POST"])
+@login_required
+@owner_only
+def edit_apartment(apartment_id):
+    requested_apartment = Apartment.query.get(apartment_id)
+    print(requested_apartment)
+    edit_form = CreateApartment(
+        apartment_name=requested_apartment.apartment_name,
+        city=requested_apartment.city,
+        address=requested_apartment.address,
+        phone_number=requested_apartment.phone_number,
+        stars=requested_apartment.stars,
+        img_url=requested_apartment.img_url,
+        text=requested_apartment.text
+    )
+    if edit_form.validate_on_submit():
+        requested_apartment.apartment_name = edit_form.apartment_name.data
+        requested_apartment.city = edit_form.city.data
+        requested_apartment.address = edit_form.address.data
+        requested_apartment.phone_number = edit_form.phone_number.data
+        requested_apartment.stars = edit_form.stars.data
+        requested_apartment.img_url = edit_form.img_url.data
+        requested_apartment.text = edit_form.text.data
+        db.session.commit()
+
+        flash("Apartamentų skelbimas sėkmingai paredaguotas", "success")
+        return redirect(url_for("property_owner_apartments"))
+    return render_template("add-apartment.html", form=edit_form, exits=True)
+
+@app.route('/property-owner-list/<int:apartment_id>/delete', methods=["GET", "POST"])
+@login_required
+@owner_only
+def delete_apartment(apartment_id):
+    apartment = Apartment.query.get_or_404(apartment_id)
+
+    #Tikrinama, ar apartamentų kambariai buvo įtraukti į rezervaciją
+    is_booked = db.session.query(Apartment, Room, room_reservation).filter(apartment.id == Room.fk_apartment_id).filter(
+        room_reservation.c.room_id == Room.id
+    ).all()
+
+    if is_booked:
+        flash("Apartamento pašalinti negalima, nes jis yra/buvo rezervuotas", "danger")
+        return redirect(url_for("property_owner_apartments"))
+    else:
+        print('NU')
+        if Room.query.filter(Room.fk_apartment_id == apartment.id).all():
+            room = Room.query.filter(Room.fk_apartment_id == apartment.id).all()
+            db.session.delete(room)
+
+        db.session.delete(apartment)
+        db.session.commit()
+        flash("Apartmentų skelbimas sėkmingai pašalintas", "success")
+        return redirect(url_for("property_owner_apartments"))

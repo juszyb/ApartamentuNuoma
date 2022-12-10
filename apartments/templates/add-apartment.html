@@ -4,7 +4,11 @@
   <div class="row mb-3">
     <div class="col-lg-8 col-md-10 mx-auto">
       <br>
+      {% if exits %}
+      <h1>Apartamentų skelbimo redagavimas</h1>
+      {% else %}
       <h1>Apartamentų skelbimo sukūrimas</h1>
+      {% endif %}
       <form action="" method="POST" novalidate>
         {{ form.hidden_tag() }}
         <div class="form-group">
