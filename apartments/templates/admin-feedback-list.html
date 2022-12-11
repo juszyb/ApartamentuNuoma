@@ -27,7 +27,7 @@
             <td>{{ feedback.cleanliness_assessment }}</td>
             <td>{{ feedback.place_assessment }}</td>
             <td>{{ feedback.comment }}</td>
-            <td><a class="btn btn-link" href="#">Panaikinti atsiliepimą</a></td>
+            <td><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myOutput{{ feedback.fk_booking_id }}">Panaikinti atsiliepimą</button></td>
           </tr>
         {% endfor %}
       </tbody>
@@ -37,5 +37,30 @@
     {% endif %}
   </div>
 </div>
+
+{% for feedback, apartment in feedbacks %}
+ <!-- Modal -->
+  <div class="modal fade" id="myOutput{{ feedback.fk_booking_id }}" role="dialog">
+    <div class="modal-dialog modal-lg">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+<!--          <button type="button" class="close" data-dismiss="modal">&times;</button>-->
+          <h4 class="modal-title">Pranešimas</h4>
+        </div>
+        <div class="modal-body">
+          <p> Ar tikrai norite pašalinti naudotojo atsiliepimą?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Uždaryti</button>
+          <a href="{{ url_for('delete_feedback', booking_id=feedback.fk_booking_id) }}" type="button" class="btn btn-primary">Pašalinti</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endfor %}
+
 
 {% include "footer.html" %}
