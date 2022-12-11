@@ -417,7 +417,7 @@ def history_page():
 def create_feedback(booking_id):
     # Grąžina užsakymą pagal užsakymo numerį
     requested_booking = Booking.query.get(booking_id)
-    if Feedback.query.get(requested_booking.id):
+    if Feedback.query.filter(Feedback.fk_booking_id == requested_booking.id).first():
         flash("Atsiliepimas jau sukurta, jį galite tik redaguoti", "danger")
         return redirect(url_for("history_page"))
     # Iš lentelės room_reservation ištraukia visus duomenis pagal norimo užsakymo id
@@ -425,7 +425,7 @@ def create_feedback(booking_id):
     # Iš Room lentelės paima kambario duomenis pagal kambario tipo id
     room = Room.query.get(room_type.room_id)
     # Randa nuomininko id pagal current userį
-    user = Tenant.query.get(current_user.id)
+    tenant = db.session.query(Tenant).where(Tenant.fk_user_id == current_user.id).first()
     # Randa hotelių duomenis pagal room type id
     apartment = Apartment.query.get(room.fk_apartment_id)
     form = FeedbackForm()
@@ -440,7 +440,7 @@ def create_feedback(booking_id):
             comment=form.comment.data,
             date=datetime.now(),
             fk_booking_id=requested_booking.id,
-            fk_tenant_id=user.id,
+            fk_tenant_id=tenant.id,
             fk_apartment_id=apartment.id
         )
         db.session.add(new_feedback)
@@ -454,13 +454,10 @@ def create_feedback(booking_id):
 @login_required
 def edit_feedback(booking_id):
     requested_booking = Booking.query.get(booking_id)
-    user = Tenant.query.get(current_user.id)
-    if not Feedback.query.get(requested_booking.id):
+    requested_feedback = Feedback.query.filter(Feedback.fk_booking_id == requested_booking.id).first()
+    if not requested_feedback:
         flash("Atsiliepimas dar nėra sukurta, jį galite tik sukurti", "danger")
         return redirect(url_for("history_page"))
-    else:
-        # Grąžina atsiliepimą pagal užsakymo numerį
-        requested_feedback = Feedback.query.filter(Feedback.fk_booking_id == requested_booking.id).first()
 
     # result = Booking.query.join(room_reservation).join(Room).join(Apartment).join(Feedback).all()
     edit_form = FeedbackForm(
