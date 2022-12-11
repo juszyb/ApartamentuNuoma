@@ -212,12 +212,14 @@ def confirm_payment(booking_id):
     ).filter(
         Apartment.id == Room.fk_apartment_id
     ).filter(
-        Bill.fk_tenant_id == tenant.id
+        Bill.id == Booking.fk_bill_id
     ).filter(
         RoomType.id == Room.fk_room_type_id
     ).filter(
         Payment.fk_bill_id == Bill.id
     ).all()[0]
+
+    print(booking)
 
     if booking.Payment.completed:
         flash("Jūs jau apmokėjote šį užsakymą", "danger")
@@ -596,7 +598,6 @@ def create_apartment():
 @owner_only
 def edit_apartment(apartment_id):
     requested_apartment = Apartment.query.get(apartment_id)
-    print(requested_apartment)
     edit_form = CreateApartment(
         apartment_name=requested_apartment.apartment_name,
         city=requested_apartment.city,
