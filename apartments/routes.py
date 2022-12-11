@@ -483,7 +483,15 @@ def edit_feedback(booking_id):
         flash("Atsiliepimas sėkmingai paredaguotas", "success")
         return redirect(url_for("history_page"))
     return render_template("feedback-form.html", booking=requested_booking, form=edit_form, is_edit=True)
-
+@app.route("/admin-feedback-list/<int:booking_id>/delete", methods=["GET", "POST"])
+@login_required
+@admin_only
+def delete_feedback(booking_id):
+    requested_feedback = Feedback.query.filter(Feedback.fk_booking_id == booking_id).first()
+    db.session.delete(requested_feedback)
+    db.session.commit()
+    flash("Naudotojo atsiliepimas sėkmingai pašalintas", "success")
+    return redirect(url_for('admin_page'))
 
 @app.route("/admin-list", methods=["GET", "POST"])
 @login_required
