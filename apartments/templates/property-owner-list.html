@@ -31,7 +31,7 @@
             <td>{{ apartment.phone_number }}</td>
             <td>{{ apartment.stars }}</td>
             <td><a class="btn btn-link" href="{{ url_for('edit_apartment', apartment_id = apartment.id) }}">Redaguoti skelbimą</a></td>
-            <td><a class="btn btn-link" href="#">Pridėti naują kambarį</a></td>
+            <td><a class="btn btn-link" href="{{ url_for('add_room', apartment_id = apartment.id) }}">Pridėti naują kambarį</a></td>
             <td><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#DeleteApartments{{ apartment.id }}">Panaikinti skelbimą</button></td>
           </tr>
         {% endfor %}

@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_login import current_user
-from wtforms import StringField, SubmitField, PasswordField, SelectField, DateField, IntegerField
+from wtforms import StringField, SubmitField, PasswordField, DateField, IntegerField, FloatField
 from wtforms.validators import DataRequired, URL, EqualTo, Email, ValidationError, NumberRange
 from flask_ckeditor import CKEditorField
 from apartments.models import User
@@ -102,4 +102,15 @@ class CreateApartment(FlaskForm):
     stars = IntegerField("Apartamentų žvaiždučių skaičius", validators=[DataRequired()])
     img_url = StringField("Nuotraukos nuoroda", validators=[DataRequired()])
     text = CKEditorField("Apartamentų aprašymas", validators=[DataRequired()])
+    submit = SubmitField("Išsaugoti")
+
+class AddRoom(FlaskForm):
+    text = CKEditorField("Kambario aprašymas", validators=[DataRequired()])
+    room_number = IntegerField("Kambario numeris", validators=[DataRequired()])
+    room_fees = FloatField("Kambario mokesčiai", validators=[DataRequired()])
+    breakfast_fees = FloatField("Pusryčių mokesčiai", validators=[DataRequired()])
+    other_fees = FloatField("Kiti mokesčiai", validators=[DataRequired()])
+    type_name = StringField("Kambario tipo pavadinimas", validators=[DataRequired()])
+    price_for_night = FloatField("Kaina už parą", validators=[DataRequired()])
+    number_of_beds = IntegerField("Lovų skaičius", validators=[DataRequired()])
     submit = SubmitField("Išsaugoti")

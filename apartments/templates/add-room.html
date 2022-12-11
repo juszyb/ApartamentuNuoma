@@ -1,0 +1,51 @@
+{% include "header.html" %}
+
+<div class="container">
+  <div class="row mb-3">
+    <div class="col-lg-8 col-md-10 mx-auto">
+      <br>
+      <h1>Kambario pridėjimas</h1>
+      <form action="" method="POST" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          {{ form.text.label(class_="form-label mt-4") }}
+          {{ form.text(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.room_number.label(class_="form-label mt-4") }}
+          {{ form.room_number(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.room_fees.label(class_="form-label mt-4") }}
+          {{ form.room_fees(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.breakfast_fees.label(class_="form-label mt-4") }}
+          {{ form.breakfast_fees(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.other_fees.label(class_="form-label mt-4") }}
+          {{ form.other_fees(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.type_name.label(class_="form-label mt-4") }}
+          {{ form.type_name(class_="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+          {{ form.price_for_night.label(class_="form-label mt-4") }}
+          {{ form.price_for_night(class_="form-control", size=32) }}
+        </div>
+          <div class="form-group">
+          {{ form.number_of_beds.label(class_="form-label mt-4") }}
+          {{ form.number_of_beds(class_="form-control", size=32) }}
+        </div>
+        <div class="d-grid gap-2 d-md-block text-center">
+          {{ form.submit(class_="btn btn-primary form-label mt-4") }}
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% include "footer.html" %}

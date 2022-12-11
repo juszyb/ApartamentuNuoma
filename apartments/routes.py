@@ -1,11 +1,11 @@
-from flask import render_template, url_for, redirect, flash, request, abort
+from flask import render_template, url_for, redirect, flash, request
 from apartments import app, db, mail
 from apartments.forms import UserRegistrationForm, BookingForm, UpdateProfileForm, UserLoginForm, \
-    VendorRegistrationForm, FeedbackForm, SearchApartments, SearchForUser, CreateApartment
+    VendorRegistrationForm, FeedbackForm, SearchApartments, SearchForUser, CreateApartment, AddRoom
 from apartments.models import User, PropertyOwner, Apartment, Tenant, Room, RoomType, Feedback, room_reservation, \
     BookingStatus, Booking, Bill, Payment, admin_only, owner_only
 from flask_login import login_user, current_user, logout_user, login_required
-from flask_googlemaps import Map, get_coordinates
+from flask_googlemaps import get_coordinates
 import folium
 from datetime import datetime
 from werkzeug.exceptions import NotFound
@@ -144,7 +144,7 @@ def book_room(room_id):
         )
 
         #Kadangi po užsakymo kambarys tampa nebelaisvas, tai pasikeičia kambario būsena
-        room.free_room = False
+        # room.free_room = False
 
         db.session.add(new_booking)
         db.session.add(new_payment)
@@ -644,3 +644,32 @@ def delete_apartment(apartment_id):
         db.session.commit()
         flash("Apartmentų skelbimas sėkmingai pašalintas", "success")
         return redirect(url_for("property_owner_apartments"))
+
+@app.route('/property-owner-list/add-room/<int:apartment_id>', methods=["GET", "POST"])
+@login_required
+@owner_only
+def add_room(apartment_id):
+    form = AddRoom()
+    if form.validate_on_submit():
+        new_room_type = RoomType(
+            type_name=form.type_name.data,
+            price_for_night=form.price_for_night.data,
+            number_of_beds=form.number_of_beds.data
+        )
+        db.session.add(new_room_type)
+        db.session.flush()
+        new_room = Room(
+            text=form.text.data,
+            room_number=form.room_number.data,
+            room_fees=form.room_fees.data,
+            breakfast_fees=form.breakfast_fees.data,
+            other_fees=form.other_fees.data,
+            fk_apartment_id=apartment_id,
+            fk_room_type_id=new_room_type.id
+        )
+        db.session.add(new_room)
+        db.session.commit()
+        flash("Sėkmingai pridėjote naują kambarį", "success")
+        return redirect(url_for('property_owner_apartments'))
+
+    return render_template("add-room.html", form=form)
